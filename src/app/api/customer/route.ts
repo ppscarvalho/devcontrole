@@ -29,3 +29,48 @@ export async function POST(request: Request){
         return NextResponse.json({ error: "Faild create new customer!" }, { status: 401 });
     }
 }
+
+export async function DELETE(request: Request){
+    const session = await getServerSession(authOptions);
+
+    if(!session || !session.user) {
+        return NextResponse.json({ error: "Not authorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const customerId = searchParams.get("id");
+
+    const customer = await prismaClient.customer.findFirst({
+        where: {
+            id: customerId as string,
+        },
+    });
+
+    if(customer == null) {
+        return NextResponse.json({ message: "Customer not found!" }, { status: 400 });
+    }
+
+    const ticketsCustomer = await prismaClient.ticket.findFirst({
+        where: {
+            customerId: customer.id as string,
+        },
+    });
+
+    if(ticketsCustomer){
+        return NextResponse.json({ message: "Cliente possui tickets associados!" }, { status: 400 });
+    }
+
+    try{
+        await prismaClient.customer.delete({
+          where:{
+            id: customer.id as string
+          }
+          
+        })
+        return NextResponse.json({ message: "Cliente deletado com sucesso!" }, { status: 200})
+    
+      }catch(err){
+        console.log(err);
+        return NextResponse.json({ error: "Failed delete customer" }, { status: 400 })
+      }
+}

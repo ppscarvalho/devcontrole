@@ -53,7 +53,7 @@ export function NewCustomerForm({ userId }: { userId: string }) {
       .then(() => {
         alert("Usuário cadastrado com sucesso!");
         router.refresh();
-        router.replace("/dashboard/customer/");
+        router.replace(`/dashboard/customer?refreshId=${new Date().getTime()}`);
       })
       .catch((error) => {
         console.log(error);
