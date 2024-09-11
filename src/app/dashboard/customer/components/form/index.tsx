@@ -42,22 +42,21 @@ export function NewCustomerForm({ userId }: { userId: string }) {
   const router = useRouter();
 
   async function handleRegisterCustomer(data: FormData) {
-    await api
-      .post("/api/customer", {
+    try {
+      await api.post("/api/customer", {
         name: data.name,
         email: data.email,
         phone: data.phone,
         address: data.address,
         userId: userId,
-      })
-      .then(() => {
-        alert("Usuário cadastrado com sucesso!");
-        router.refresh();
-        router.replace(`/dashboard/customer?refreshId=${new Date().getTime()}`);
-      })
-      .catch((error) => {
-        console.log(error);
       });
+
+      router.refresh();
+      router.replace("/dashboard/customer");
+      alert("Usuário cadastrado com sucesso!");
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (

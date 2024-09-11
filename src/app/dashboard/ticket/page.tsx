@@ -16,6 +16,29 @@ export default async function Ticket() {
     where: { userId: session.user.id },
   });
 
+  async function handleRegisterTicket(formData: FormData) {
+    "use server";
+
+    const name = formData.get("name");
+    const description = formData.get("description");
+    const customerId = formData.get("customer");
+
+    if (!name || !description || !customerId) {
+      return;
+    }
+
+    await prismaClient.ticket.create({
+      data: {
+        name: name as string,
+        description: description as string,
+        status: "ABERTO",
+        customerId: customerId as string,
+        userId: session?.user?.id as string,
+      },
+    });
+    redirect("/dashboard");
+  }
+
   return (
     <Container>
       <main className="flex flex-col mt-9 mb-2">
@@ -29,13 +52,14 @@ export default async function Ticket() {
           <h1 className="text-3xl font-bold">Novo Chamado</h1>
         </div>
 
-        <form className="flex flex-col mt-6">
+        <form className="flex flex-col mt-6" action={handleRegisterTicket}>
           <label className="mb-1 font-medium text-lg">Nome do chamado</label>
           <input
             className="w-full border-2 rounded-md px-2 h-11"
             type="text"
             placeholder="Digite o nome do chamado"
             required
+            name="name"
           />
 
           <label className="mb-1 font-medium text-lg mt-4">
@@ -45,6 +69,7 @@ export default async function Ticket() {
             className="w-full border-2 rounded-md px-2 h-24 resize-none"
             placeholder="descreva o problema"
             required
+            name="description"
           ></textarea>
 
           <label className="mb-1 font-medium text-lg mt-4">
@@ -58,7 +83,10 @@ export default async function Ticket() {
             </>
           ) : (
             <>
-              <select className="w-full border-2 rounded-md px-2 h-11 bg-white">
+              <select
+                className="w-full border-2 rounded-md px-2 h-11 bg-white"
+                name="customer"
+              >
                 <option value="Selecione">Selecionar um cliente</option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
